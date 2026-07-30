@@ -1,5 +1,13 @@
-import { useEffect, useRef } from 'react'
-import * as Plotly from 'plotly.js-basic-dist-min'
+import { useEffect, useRef, useState } from 'react'
+import type * as PlotlyType from 'plotly.js-basic-dist-min'
+
+// Lazy-load Plotly so its 1 MB bundle only downloads when a chart is
+// actually rendered, not on every page load.
+let _plotly: typeof PlotlyType | null = null
+async function loadPlotly() {
+  if (!_plotly) _plotly = (await import('plotly.js-basic-dist-min')).default ?? (await import('plotly.js-basic-dist-min'))
+  return _plotly!
+}
 
 export type { PlotlyData, PlotlyLayout } from 'plotly.js-basic-dist-min'
 
@@ -9,37 +17,40 @@ export function Plot({
   className,
   ariaLabel,
 }: {
-  data: Plotly.PlotlyData[]
-  layout: Plotly.PlotlyLayout
+  data: PlotlyType.PlotlyData[]
+  layout: PlotlyType.PlotlyLayout
   className?: string
   ariaLabel?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    void Plotly.react(el, data, layout, {
-      responsive: true,
-      displaylogo: false,
-      scrollZoom: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-      toImageButtonOptions: { format: 'png', filename: 'curvelab-chart', scale: 2 },
+    let cancelled = false
+    loadPlotly().then((Plotly) => {
+      if (cancelled) return
+      setReady(true)
+      const el = ref.current
+      if (!el) return
+      void Plotly.react(el, data, layout, {
+        responsive: true,
+        displaylogo: false,
+        scrollZoom: true,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        toImageButtonOptions: { format: 'png', filename: 'curvelab-chart', scale: 2 },
+      })
     })
+    return () => { cancelled = true }
   }, [data, layout])
 
-  // Redraw whenever the container actually changes size. Plotly's own
-  // `responsive` mode only listens to window resize and can miss layout
-  // reflows (breakpoint stacking, sidebar toggle, zoom). ResizeObserver
-  // catches every case in both directions.
   useEffect(() => {
     const el = ref.current
-    if (!el || typeof ResizeObserver === 'undefined') return
+    if (!el || typeof ResizeObserver === 'undefined' || !ready) return
     let raf = 0
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
-        if (el.isConnected) void Plotly.Plots.resize(el)
+        if (el.isConnected) void loadPlotly().then((P) => P.Plots.resize(el))
       })
     })
     observer.observe(el)
@@ -47,14 +58,14 @@ export function Plot({
       cancelAnimationFrame(raf)
       observer.disconnect()
     }
-  }, [])
+  }, [ready])
 
   useEffect(() => {
     const el = ref.current
     return () => {
-      if (el) Plotly.purge(el)
+      if (el && ready) loadPlotly().then((P) => P.purge(el))
     }
-  }, [])
+  }, [ready])
 
   return <div ref={ref} className={`${className ?? ''} min-w-0`} role="img" aria-label={ariaLabel} />
 }
