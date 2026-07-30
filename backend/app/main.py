@@ -11,21 +11,16 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 
 from app.api.routers import data, export, fit, meta
 from app.core.config import get_settings
 from app.core.errors import DomainError
-
-# Built frontend, produced by the Dockerfile (stage 1) and served same-origin.
-# Absent in local development, where Vite serves the UI on :5173 instead.
-STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 logger = logging.getLogger("curvelab")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -88,45 +83,6 @@ def create_app() -> FastAPI:
     app.include_router(fit.router, prefix="/api/v1")
     app.include_router(data.router, prefix="/api/v1")
     app.include_router(export.router, prefix="/api/v1")
-
-    if STATIC_DIR.is_dir():
-        # SPA catch-all: serve built assets and fall back to index.html so
-        # client-side routes (/app, /methods, /about) work on refresh.
-        # Registered last so /api/v1 routes always take precedence.
-        @app.get("/{full_path:path}", include_in_schema=False)
-        async def spa(full_path: str, request: Request):  # noqa: ANN202
-            if full_path.startswith("api/"):
-                return JSONResponse(
-                    status_code=404,
-                    content={
-                        "type": "not_found",
-                        "title": "Unknown API route",
-                        "detail": f"No API endpoint matches /{full_path}.",
-                    },
-                )
-            candidate = STATIC_DIR / full_path
-            if full_path and candidate.is_file():
-                # Serve pre-compressed .gz if the browser supports it
-                accept_enc = request.headers.get("accept-encoding", "")
-                gz = candidate.with_suffix(candidate.suffix + ".gz")
-                if "gzip" in accept_enc and gz.is_file():
-                    return FileResponse(
-                        gz,
-                        headers={
-                            "Content-Encoding": "gzip",
-                            "Cache-Control": "public, max-age=31536000, immutable",
-                        },
-                    )
-                return FileResponse(candidate)
-            # SPA fallback for client-side routes
-            accept_enc = request.headers.get("accept-encoding", "")
-            index_gz = STATIC_DIR / "index.html.gz"
-            if "gzip" in accept_enc and index_gz.is_file():
-                return FileResponse(
-                    index_gz,
-                    headers={"Content-Encoding": "gzip", "Content-Type": "text/html; charset=utf-8"},
-                )
-            return FileResponse(STATIC_DIR / "index.html")
 
     return app
 

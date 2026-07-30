@@ -1,0 +1,10 @@
+run = "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 3000"
+entrypoint = "backend/app/main.py"
+modules = ["python3-v12"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
+deploymentTarget = "cloudrun"

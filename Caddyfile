@@ -1,9 +1,0 @@
-# CurveLab reverse proxy.
-# DOMAIN comes from the environment (see docker-compose.yml / .env).
-# With a real domain, Caddy obtains and renews HTTPS certificates
-# automatically. With "localhost" it serves plain HTTP for testing.
-
-{$DOMAIN}
-
-encode zstd gzip
-reverse_proxy app:8000

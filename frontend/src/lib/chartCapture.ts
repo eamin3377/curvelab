@@ -1,6 +1,8 @@
 // Registry that lets the ExportBar capture the on-screen Plotly chart as a
 // PNG without prop drilling. GraphCard registers its plot container here.
 
+import * as Plotly from 'plotly.js-basic-dist-min'
+
 let chartEl: HTMLElement | null = null
 
 export function registerChart(el: HTMLElement | null): void {
@@ -9,7 +11,6 @@ export function registerChart(el: HTMLElement | null): void {
 
 export async function captureChartPng(): Promise<string | null> {
   if (!chartEl || !chartEl.isConnected) return null
-  const Plotly = await import('plotly.js-basic-dist-min')
   const dataUrl = await Plotly.toImage(chartEl, {
     format: 'png',
     width: 1280,
