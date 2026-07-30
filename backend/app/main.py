@@ -94,7 +94,7 @@ def create_app() -> FastAPI:
         # client-side routes (/app, /methods, /about) work on refresh.
         # Registered last so /api/v1 routes always take precedence.
         @app.get("/{full_path:path}", include_in_schema=False)
-        async def spa(full_path: str):  # noqa: ANN202 - mixed response types
+        async def spa(full_path: str, request: Request):  # noqa: ANN202
             if full_path.startswith("api/"):
                 return JSONResponse(
                     status_code=404,
@@ -106,7 +106,26 @@ def create_app() -> FastAPI:
                 )
             candidate = STATIC_DIR / full_path
             if full_path and candidate.is_file():
+                # Serve pre-compressed .gz if the browser supports it
+                accept_enc = request.headers.get("accept-encoding", "")
+                gz = candidate.with_suffix(candidate.suffix + ".gz")
+                if "gzip" in accept_enc and gz.is_file():
+                    return FileResponse(
+                        gz,
+                        headers={
+                            "Content-Encoding": "gzip",
+                            "Cache-Control": "public, max-age=31536000, immutable",
+                        },
+                    )
                 return FileResponse(candidate)
+            # SPA fallback for client-side routes
+            accept_enc = request.headers.get("accept-encoding", "")
+            index_gz = STATIC_DIR / "index.html.gz"
+            if "gzip" in accept_enc and index_gz.is_file():
+                return FileResponse(
+                    index_gz,
+                    headers={"Content-Encoding": "gzip", "Content-Type": "text/html; charset=utf-8"},
+                )
             return FileResponse(STATIC_DIR / "index.html")
 
     return app
