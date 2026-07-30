@@ -9,7 +9,7 @@ export function registerChart(el: HTMLElement | null): void {
 
 export async function captureChartPng(): Promise<string | null> {
   if (!chartEl || !chartEl.isConnected) return null
-  const Plotly = (await import('plotly.js-basic-dist-min')).default ?? await import('plotly.js-basic-dist-min')
+  const Plotly = await import('plotly.js-basic-dist-min')
   const dataUrl = await Plotly.toImage(chartEl, {
     format: 'png',
     width: 1280,

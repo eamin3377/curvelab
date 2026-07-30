@@ -4,9 +4,9 @@ import type * as PlotlyType from 'plotly.js-basic-dist-min'
 // Lazy-load Plotly so its 1 MB bundle only downloads when a chart is
 // actually rendered, not on every page load.
 let _plotly: typeof PlotlyType | null = null
-async function loadPlotly() {
-  if (!_plotly) _plotly = (await import('plotly.js-basic-dist-min')).default ?? (await import('plotly.js-basic-dist-min'))
-  return _plotly!
+async function loadPlotly(): Promise<typeof PlotlyType> {
+  if (!_plotly) _plotly = await import('plotly.js-basic-dist-min')
+  return _plotly
 }
 
 export type { PlotlyData, PlotlyLayout } from 'plotly.js-basic-dist-min'
