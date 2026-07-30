@@ -11,16 +11,21 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.routers import data, export, fit, meta
 from app.core.config import get_settings
 from app.core.errors import DomainError
+
+# Built frontend (created by the startup script). Served same-origin
+# so the whole app runs as one process on Replit.
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 logger = logging.getLogger("curvelab")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -83,6 +88,23 @@ def create_app() -> FastAPI:
     app.include_router(fit.router, prefix="/api/v1")
     app.include_router(data.router, prefix="/api/v1")
     app.include_router(export.router, prefix="/api/v1")
+
+    if STATIC_DIR.is_dir():
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def spa(full_path: str):  # noqa: ANN202
+            if full_path.startswith("api/"):
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "type": "not_found",
+                        "title": "Unknown API route",
+                        "detail": f"No API endpoint matches /{full_path}.",
+                    },
+                )
+            candidate = STATIC_DIR / full_path
+            if full_path and candidate.is_file():
+                return FileResponse(candidate)
+            return FileResponse(STATIC_DIR / "index.html")
 
     return app
 
