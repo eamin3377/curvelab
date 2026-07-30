@@ -86,7 +86,7 @@ export function TablesCard({ result }: { result: ApiFitResult }) {
         subtitle={`Every value used by the normal equations · ${table.total_rows} rows${table.truncated ? ' (first 1000 shown)' : ''}`}
         icon={<Table2 className="h-4 w-4" />}
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
             <div className="relative hidden sm:block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               <input
@@ -104,7 +104,7 @@ export function TablesCard({ result }: { result: ApiFitResult }) {
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               Copy
             </Button>
-          </>
+          </div>
         }
       />
 

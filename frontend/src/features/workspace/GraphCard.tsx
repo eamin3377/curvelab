@@ -25,7 +25,7 @@ export function GraphCard({
         subtitle="Zoom, pan and hover — export from the toolbar"
         icon={<ChartSpline className="h-4 w-4" />}
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
             <SegmentedControl
               id="graph-view"
               className="w-full min-[420px]:w-52"
@@ -39,11 +39,11 @@ export function GraphCard({
             <button
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
               aria-label={`Switch chart to ${theme === 'light' ? 'dark' : 'light'} theme`}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-200 hover:text-indigo-600"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:border-indigo-200 hover:text-indigo-600"
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
-          </>
+          </div>
         }
       />
       <div

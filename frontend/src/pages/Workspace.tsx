@@ -41,7 +41,7 @@ export function Workspace() {
           </div>
 
           <div className="grid min-w-0 gap-6 lg:grid-cols-[380px_1fr] lg:items-start 2xl:grid-cols-[440px_1fr] 2xl:gap-8">
-            <div className="min-w-0 lg:sticky lg:top-24">
+            <div className="min-w-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:scrollbar-thin">
               <InputPanel
                 points={ws.points}
                 onPointsChange={(pts) => {
@@ -63,7 +63,7 @@ export function Workspace() {
               />
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 overflow-x-hidden">
               <AnimatePresence>
                 {ws.problem && (
                   <motion.div
@@ -118,7 +118,7 @@ export function Workspace() {
                     <motion.div variants={rise}>
                       <GraphCard result={ws.result} prediction={prediction} />
                     </motion.div>
-                    <motion.div variants={rise} className="grid gap-6 xl:grid-cols-[1fr_340px]">
+                    <motion.div variants={rise} className="grid gap-6 xl:grid-cols-[1fr_340px] 2xl:grid-cols-[1fr_360px]">
                       <TablesCard result={ws.result} />
                       <PredictionCard result={ws.result} onPredict={setPrediction} />
                     </motion.div>
