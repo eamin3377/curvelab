@@ -1,0 +1,1 @@
+"""CurveLab backend application package."""

@@ -1,0 +1,30 @@
+# Dependencies (auto-generated, reinstall from requirements.txt / package.json)
+node_modules/
+.venv/
+venv/
+
+# Build output
+dist/
+dist-ssr/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Env files
+.env
+*.local
+
+# Logs
+logs/
+*.log
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Local debug screenshots/scripts (not part of the app)
+shots/
