@@ -46,15 +46,14 @@ export function InputPanel({
   const [tab, setTab] = useState<InputTab>('manual')
 
   return (
-    <>
-    <Card className="overflow-hidden">
+    <Card className="flex max-h-[calc(100vh-15rem)] flex-col overflow-hidden">
       <CardHeader
         title="Dataset"
         subtitle={`${points.length} points loaded`}
         icon={<Sparkles className="h-4 w-4" />}
       />
 
-      <div className="p-5">
+      <div className="flex-1 overflow-y-auto p-5 scrollbar-thin">
         <div className="flex min-w-0 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Data input method">
           {tabs.map((t) => (
             <button
@@ -130,73 +129,70 @@ export function InputPanel({
             </motion.div>
           </AnimatePresence>
         </div>
+      </div>
 
-        <div className="mt-6 border-t border-slate-100 pt-5">
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Fitting model
-          </label>
-          <SegmentedControl
-            id="model"
-            options={[
-              { value: 'linear', label: 'Linear' },
-              { value: 'polynomial', label: 'Polynomial' },
-              { value: 'exponential', label: 'Exponential' },
-            ]}
-            value={(isExponentialFamily(model) ? 'exponential' : model) as 'linear' | 'polynomial' | 'exponential'}
-            onChange={(m) => onModelChange(m as ModelId)}
-          />
-          <AnimatePresence initial={false}>
-            {isExponentialFamily(model) && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3">
-                  <SegmentedControl
-                    id="exp-form"
-                    options={[
-                      { value: 'exponential', label: 'y = aeᵇˣ' },
-                      { value: 'exponential_abx', label: 'y = abˣ' },
-                      { value: 'power', label: 'y = axᵇ' },
-                    ]}
-                    value={model}
-                    onChange={(m) => onModelChange(m as ModelId)}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div className="mt-3 flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50/70 py-2.5">
-            <Equation latex={MODEL_META[model].formula} className="text-[15px] text-slate-700" />
-          </div>
+      {/* Fixed bottom section — model selector + Fit button, always visible */}
+      <div className="border-t border-slate-100 p-4">
+        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Fitting model
+        </label>
+        <SegmentedControl
+          id="model"
+          options={[
+            { value: 'linear', label: 'Linear' },
+            { value: 'polynomial', label: 'Polynomial' },
+            { value: 'exponential', label: 'Exponential' },
+          ]}
+          value={(isExponentialFamily(model) ? 'exponential' : model) as 'linear' | 'polynomial' | 'exponential'}
+          onChange={(m) => onModelChange(m as ModelId)}
+        />
+        <AnimatePresence initial={false}>
+          {isExponentialFamily(model) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-2">
+                <SegmentedControl
+                  id="exp-form"
+                  options={[
+                    { value: 'exponential', label: 'y = aeᵇˣ' },
+                    { value: 'exponential_abx', label: 'y = abˣ' },
+                    { value: 'power', label: 'y = axᵇ' },
+                  ]}
+                  value={model}
+                  onChange={(m) => onModelChange(m as ModelId)}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div className="mt-2 flex items-center justify-center rounded-lg border border-slate-100 bg-slate-50/70 py-1.5">
+          <Equation latex={MODEL_META[model].formula} className="text-[14px] text-slate-700" />
         </div>
+
+        <Button
+          size="lg"
+          className="mt-3 w-full"
+          onClick={onFit}
+          disabled={status === 'fitting' || points.length < 2}
+        >
+          {status === 'fitting' ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Solving least squares…
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4" />
+              Fit Curve
+            </>
+          )}
+        </Button>
       </div>
     </Card>
-
-    {/* Sticky Fit Curve button — always visible at bottom of viewport on desktop */}
-    <div className="sticky bottom-4 z-20 mt-4 lg:bottom-6">
-      <Button
-        size="lg"
-        className="w-full shadow-lg shadow-indigo-500/30"
-        onClick={onFit}
-        disabled={status === 'fitting' || points.length < 2}
-      >
-        {status === 'fitting' ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Solving least squares…
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-4 w-4" />
-            Fit Curve
-          </>
-        )}
-      </Button>
-    </div>
-    </>
   )
 }
