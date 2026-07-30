@@ -117,9 +117,11 @@ def calculation_table(
     """Build the per-row calculation table shown in the UI and reports.
 
     Columns adapt to the model:
-      - linear:      x, y, x², xy, ŷ, y−ŷ, (y−ŷ)²
-      - polynomial:  x, y, x², ..., x^m, xy, ..., x^m·y, ŷ, y−ŷ, (y−ŷ)²
-      - exponential: x, y, ln y, x², x·ln y, ŷ, y−ŷ, (y−ŷ)²
+      - linear:          x, y, x², xy, ŷ, y−ŷ, (y−ŷ)²
+      - polynomial:      x, y, x², ..., x^m, xy, ..., x^m·y, ŷ, y−ŷ, (y−ŷ)²
+      - exponential
+        (ae^bx / ab^x):  x, y, ln y, x², x·ln y, ŷ, y−ŷ, (y−ŷ)²
+      - power (ax^b):    x, y, ln x, ln y, (ln x)², ln x·ln y, ŷ, y−ŷ, (y−ŷ)²
 
     The ``sums`` row aggregates every column; ``truncated`` is True when the
     row cap was applied (the full table is always available via CSV export).
@@ -130,10 +132,15 @@ def calculation_table(
     columns: list[str] = ["x", "y"]
     cols: list[FloatArray] = [x, y]
 
-    if model == "exponential":
+    if model in ("exponential", "exponential_abx"):
         ln_y = np.log(y)
         columns += ["ln_y", "x2", "x_ln_y"]
         cols += [ln_y, x**2, x * ln_y]
+    elif model == "power":
+        ln_x = np.log(x)
+        ln_y = np.log(y)
+        columns += ["ln_x", "ln_y", "ln_x2", "ln_x_ln_y"]
+        cols += [ln_x, ln_y, ln_x**2, ln_x * ln_y]
     else:
         # The normal equations need powers up to x^m, and the display always
         # includes x² since even the linear model consumes Σx².

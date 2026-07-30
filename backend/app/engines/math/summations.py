@@ -100,8 +100,8 @@ def cross_key(k: int) -> str:
 
 
 def exponential_summations(x: FloatArray, y: FloatArray) -> dict[str, float]:
-    """Summations for the exponential model y = a·e^(bx), linearized as
-    ln y = ln a + bx.
+    """Summations for the exponential models y = a·e^(bx) and y = a·b^x,
+    both linearized on (x, ln y).
 
     Requires all y > 0 (validated upstream).
 
@@ -116,4 +116,24 @@ def exponential_summations(x: FloatArray, y: FloatArray) -> dict[str, float]:
         "sum_x2": sx[2],
         "sum_ln_y": float(np.sum(ln_y)),
         "sum_x_ln_y": float(np.sum(x * ln_y)),
+    }
+
+
+def power_summations(x: FloatArray, y: FloatArray) -> dict[str, float]:
+    """Summations for the power model y = a·x^b, linearized as
+    ln y = ln a + b·ln x (a straight line in (ln x, ln y)).
+
+    Requires all x > 0 and all y > 0 (validated upstream).
+
+    Returns:
+        Dict with n, sum_ln_x, sum_ln_x2, sum_ln_y, sum_ln_x_ln_y.
+    """
+    ln_x = np.log(x)
+    ln_y = np.log(y)
+    return {
+        "n": float(len(x)),
+        "sum_ln_x": float(np.sum(ln_x)),
+        "sum_ln_x2": float(np.sum(ln_x * ln_x)),
+        "sum_ln_y": float(np.sum(ln_y)),
+        "sum_ln_x_ln_y": float(np.sum(ln_x * ln_y)),
     }

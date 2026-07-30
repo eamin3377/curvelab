@@ -90,6 +90,89 @@ def build_exponential_system(
     )
 
 
+def build_abx_system(
+    summations: dict[str, float], precision: int = 4
+) -> NormalEquations:
+    """Assemble the 2×2 system for y = a·b^x, linearized on (x, ln y):
+
+        n·ln a + ln b·Σx   = Σln y
+        ln a·Σx + ln b·Σx² = Σx·ln y
+
+    Numerically identical to the exponential system (same transformed data)
+    but the unknowns are ln a and ln b.
+
+    Args:
+        summations: Output of ``summations.exponential_summations``.
+        precision: Decimals used in the substituted LaTeX rendering.
+    """
+    n = summations["n"]
+    sx = summations["sum_x"]
+    sx2 = summations["sum_x2"]
+    slny = summations["sum_ln_y"]
+    sxlny = summations["sum_x_ln_y"]
+
+    matrix = [[n, sx], [sx, sx2]]
+    vector = [slny, sxlny]
+    symbolic = (
+        "\\begin{cases} n\\ln a + \\ln b\\sum x_i = \\sum \\ln y_i \\\\[4pt]"
+        " \\ln a\\sum x_i + \\ln b\\sum x_i^2 = \\sum x_i \\ln y_i \\end{cases}"
+    )
+    substituted = (
+        "\\begin{cases}"
+        f" {latex_number(n, precision)}\\ln a + {latex_number(sx, precision)}\\,\\ln b"
+        f" = {latex_number(slny, precision)} \\\\[4pt]"
+        f" {latex_number(sx, precision)}\\ln a + {latex_number(sx2, precision)}\\,\\ln b"
+        f" = {latex_number(sxlny, precision)}"
+        " \\end{cases}"
+    )
+    return NormalEquations(
+        matrix=matrix,
+        vector=vector,
+        latex_symbolic=symbolic,
+        latex_substituted=substituted,
+    )
+
+
+def build_power_system(
+    summations: dict[str, float], precision: int = 4
+) -> NormalEquations:
+    """Assemble the 2×2 system for y = a·x^b, linearized on (ln x, ln y):
+
+        n·ln a + b·Σln x     = Σln y
+        ln a·Σln x + b·Σ(ln x)² = Σln x·ln y
+
+    Args:
+        summations: Output of ``summations.power_summations``.
+        precision: Decimals used in the substituted LaTeX rendering.
+    """
+    n = summations["n"]
+    slnx = summations["sum_ln_x"]
+    slnx2 = summations["sum_ln_x2"]
+    slny = summations["sum_ln_y"]
+    slnxlny = summations["sum_ln_x_ln_y"]
+
+    matrix = [[n, slnx], [slnx, slnx2]]
+    vector = [slny, slnxlny]
+    symbolic = (
+        "\\begin{cases} n\\ln a + b\\sum \\ln x_i = \\sum \\ln y_i \\\\[4pt]"
+        " \\ln a\\sum \\ln x_i + b\\sum (\\ln x_i)^2 = \\sum \\ln x_i \\ln y_i \\end{cases}"
+    )
+    substituted = (
+        "\\begin{cases}"
+        f" {latex_number(n, precision)}\\ln a + {latex_number(slnx, precision)}\\,b"
+        f" = {latex_number(slny, precision)} \\\\[4pt]"
+        f" {latex_number(slnx, precision)}\\ln a + {latex_number(slnx2, precision)}\\,b"
+        f" = {latex_number(slnxlny, precision)}"
+        " \\end{cases}"
+    )
+    return NormalEquations(
+        matrix=matrix,
+        vector=vector,
+        latex_symbolic=symbolic,
+        latex_substituted=substituted,
+    )
+
+
 def _symbolic_latex(degree: int) -> str:
     """Render the generic degree-m normal equations as a LaTeX cases block."""
     lines: list[str] = []

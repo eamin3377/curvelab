@@ -183,7 +183,7 @@ def validate_for_model(
 
     Args:
         xa: Cleaned x array (used to detect the all-equal-x singular case).
-        model: 'linear' | 'polynomial' | 'exponential'.
+        model: 'linear' | 'polynomial' | 'exponential' | 'exponential_abx' | 'power'.
         degree: Polynomial degree (ignored for other models).
 
     Raises:

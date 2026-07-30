@@ -11,13 +11,15 @@ import numpy as np
 
 from app.core.errors import (
     DatasetValidationError,
+    NonPositiveXValuesError,
     NonPositiveYValuesError,
     SingularSystemError,
 )
 from app.engines.math import graph_data, metrics, steps as steps_builder
 from app.engines.math.gaussian_solver import SingularMatrixError
-from app.engines.math.models import exponential, linear, polynomial
+from app.engines.math.models import exponential, exponential_abx, linear, polynomial, power
 from app.engines.math.models.exponential import NonPositiveYError
+from app.engines.math.models.power import NonPositiveXError
 from app.engines.math.predictor import predict as predict_values
 from app.engines.math.types import FloatArray, ModelComputation
 from app.schemas.dataset import CleaningReport
@@ -45,15 +47,20 @@ _SUMMATION_ORDER = {
     "n": 0,
     "sum_x": 1,
     "sum_y": 2,
-    "sum_ln_y": 3,
-    "sum_xy": 4,
-    "sum_x_ln_y": 5,
+    "sum_ln_x": 3,
+    "sum_ln_y": 4,
+    "sum_xy": 5,
+    "sum_x_ln_y": 6,
+    "sum_ln_x2": 7,
+    "sum_ln_x_ln_y": 8,
 }
 
 _MODEL_LABELS = {
     ModelName.linear: "y = a + bx",
     ModelName.polynomial: "y = a₀ + a₁x + a₂x² + ⋯ + aₘxᵐ",
     ModelName.exponential: "y = a·e^(bx)",
+    ModelName.exponential_abx: "y = a·b^x",
+    ModelName.power: "y = a·x^b",
 }
 
 
@@ -75,10 +82,11 @@ def run_fit(request: FitRequest) -> FitResult:
 
 
 def run_compare(request) -> CompareResult:
-    """Fit all three models on the same data and rank them by R².
+    """Fit every model on the same data and rank them by R².
 
-    The exponential entry is marked unavailable (with the reason) when the
-    data contains y <= 0 instead of failing the whole comparison.
+    Models whose constraints the data violates (e.g. y <= 0 for the
+    exponential family, x <= 0 for the power model) are marked unavailable
+    with the reason instead of failing the whole comparison.
     """
     fit_request = FitRequest(
         x=request.x, y=request.y, precision=request.precision
@@ -86,7 +94,13 @@ def run_compare(request) -> CompareResult:
     xa, ya, _ = _clean(fit_request)
 
     entries: list[CompareEntry] = []
-    for model in (ModelName.linear, ModelName.polynomial, ModelName.exponential):
+    for model in (
+        ModelName.linear,
+        ModelName.polynomial,
+        ModelName.exponential,
+        ModelName.exponential_abx,
+        ModelName.power,
+    ):
         try:
             req = FitRequest(
                 x=request.x,
@@ -105,7 +119,12 @@ def run_compare(request) -> CompareResult:
                     metrics=result.metrics,
                 )
             )
-        except (DatasetValidationError, NonPositiveYValuesError, SingularSystemError) as exc:
+        except (
+            DatasetValidationError,
+            NonPositiveYValuesError,
+            NonPositiveXValuesError,
+            SingularSystemError,
+        ) as exc:
             entries.append(
                 CompareEntry(model=model, available=False, reason=exc.detail)
             )
@@ -137,11 +156,25 @@ def run_predict(request) -> PredictResult:
     computation = _dispatch(xa, ya, fit_req)
 
     predictions = predict_values(computation.predict, xa, list(request.predict_at))
-    if fit_req.model == ModelName.exponential:
+    if fit_req.model in (
+        ModelName.exponential,
+        ModelName.exponential_abx,
+        ModelName.power,
+    ):
+        from app.engines.math.formatting import (
+            build_abx_equation,
+            build_exponential_equation,
+            build_power_equation,
+        )
+
         a = computation.coefficients[0].value
         b = computation.coefficients[1].value
-        plain = f"y = {a:.{request.precision}f}·e^({b:.{request.precision}f}x)"
-        latex = f"y = {a:.{request.precision}f}\\,e^{{{b:.{request.precision}f}x}}"
+        builder = {
+            ModelName.exponential: build_exponential_equation,
+            ModelName.exponential_abx: build_abx_equation,
+            ModelName.power: build_power_equation,
+        }[fit_req.model]
+        plain, latex = builder(a, b, request.precision)
     else:
         from app.engines.math.formatting import build_polynomial_equation
 
@@ -177,10 +210,21 @@ def _dispatch(
             return linear.fit(xa, ya, request.precision)
         if request.model == ModelName.polynomial:
             return polynomial.fit(xa, ya, request.degree, request.precision)
+        if request.model == ModelName.exponential_abx:
+            return exponential_abx.fit(xa, ya, request.precision)
+        if request.model == ModelName.power:
+            return power.fit(xa, ya, request.precision)
         return exponential.fit(xa, ya, request.precision)
+    except NonPositiveXError as exc:
+        raise NonPositiveXValuesError(
+            title="Power-law fit requires positive x values",
+            detail=str(exc),
+            field="x",
+            offending_indices=exc.offending_indices,
+        ) from exc
     except NonPositiveYError as exc:
         raise NonPositiveYValuesError(
-            title="Exponential fit requires positive y values",
+            title="This model requires positive y values",
             detail=str(exc),
             field="y",
             offending_indices=exc.offending_indices,
@@ -288,13 +332,19 @@ def _package(
 def _equation_strings(computation: ModelComputation, precision: int) -> tuple[str, str]:
     """Rebuild the plain/LaTeX equation strings from fitted coefficients."""
     from app.engines.math.formatting import (
+        build_abx_equation,
         build_exponential_equation,
         build_polynomial_equation,
+        build_power_equation,
     )
 
     values = [c.value for c in computation.coefficients]
     if computation.model == "exponential":
         return build_exponential_equation(values[0], values[1], precision)
+    if computation.model == "exponential_abx":
+        return build_abx_equation(values[0], values[1], precision)
+    if computation.model == "power":
+        return build_power_equation(values[0], values[1], precision)
     return build_polynomial_equation(values, precision)
 
 

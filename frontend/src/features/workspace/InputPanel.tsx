@@ -9,7 +9,7 @@ import { ManualGrid } from './ManualGrid'
 import { PastePanel } from './PastePanel'
 import { UploadZone } from './UploadZone'
 import { SamplesPanel } from './SamplesPanel'
-import { MODEL_META, type ModelId, type Point } from '../../lib/types'
+import { isExponentialFamily, MODEL_META, type ModelId, type Point } from '../../lib/types'
 import type { CleaningNote, FitStatus } from './useWorkspace'
 import { cn } from '../../lib/utils'
 
@@ -141,9 +141,33 @@ export function InputPanel({
               { value: 'polynomial', label: 'Polynomial' },
               { value: 'exponential', label: 'Exponential' },
             ]}
-            value={model}
-            onChange={(m) => onModelChange(m)}
+            value={(isExponentialFamily(model) ? 'exponential' : model) as 'linear' | 'polynomial' | 'exponential'}
+            onChange={(m) => onModelChange(m as ModelId)}
           />
+          <AnimatePresence initial={false}>
+            {isExponentialFamily(model) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3">
+                  <SegmentedControl
+                    id="exp-form"
+                    options={[
+                      { value: 'exponential', label: 'y = aeᵇˣ' },
+                      { value: 'exponential_abx', label: 'y = abˣ' },
+                      { value: 'power', label: 'y = axᵇ' },
+                    ]}
+                    value={model}
+                    onChange={(m) => onModelChange(m as ModelId)}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="mt-3 flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50/70 py-2.5">
             <Equation latex={MODEL_META[model].formula} className="text-[15px] text-slate-700" />
           </div>

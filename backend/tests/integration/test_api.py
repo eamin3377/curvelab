@@ -91,6 +91,60 @@ def test_fit_exponential_rejects_nonpositive_y(client: TestClient) -> None:
     assert problem["offending_indices"] == [1]
 
 
+def test_fit_exponential_abx(client: TestClient) -> None:
+    """Growth data fits y = a·b^x with b > 1 and matching ln y summations."""
+    res = client.post(
+        "/api/v1/fit",
+        json={
+            "x": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "y": [12.1, 16.4, 22.0, 30.1, 40.4, 54.6, 73.9, 99.2, 134.6, 181.1, 245.0],
+            "model": "exponential_abx",
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["model"] == "exponential_abx"
+    assert body["coefficients"][1]["value"] > 1.0
+    assert body["metrics"]["r2"] > 0.999
+    sum_keys = {s["key"] for s in body["summations"]}
+    assert "sum_ln_y" in sum_keys
+    table_cols = body["calculation_table"]["columns"]
+    assert "ln_y" in table_cols and "x_ln_y" in table_cols
+
+
+def test_fit_power(client: TestClient) -> None:
+    """Power data y = 2·x^1.5 fits with a ≈ 2, b ≈ 1.5 and log-log sums."""
+    xs = [1, 2, 3, 4, 5, 6, 7, 8]
+    ys = [2.0 * x**1.5 for x in xs]
+    res = client.post(
+        "/api/v1/fit",
+        json={"x": xs, "y": ys, "model": "power"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["model"] == "power"
+    a = body["coefficients"][0]["value"]
+    b = body["coefficients"][1]["value"]
+    assert abs(a - 2.0) < 1e-6 and abs(b - 1.5) < 1e-6
+    sum_keys = {s["key"] for s in body["summations"]}
+    assert {"sum_ln_x", "sum_ln_x2", "sum_ln_x_ln_y"} <= sum_keys
+    table_cols = body["calculation_table"]["columns"]
+    assert "ln_x" in table_cols and "ln_x_ln_y" in table_cols
+
+
+def test_fit_power_rejects_nonpositive_x(client: TestClient) -> None:
+    """x <= 0 returns a 422 problem naming the offending rows for power fit."""
+    res = client.post(
+        "/api/v1/fit",
+        json={"x": [0, 1, 2, 3], "y": [1, 2, 4, 9], "model": "power"},
+    )
+    assert res.status_code == 422
+    problem = res.json()
+    assert problem["type"] == "validation_error"
+    assert problem["field"] == "x"
+    assert problem["offending_indices"] == [0]
+
+
 def test_fit_rejects_mismatched_lengths(client: TestClient) -> None:
     """x and y of different lengths are a schema-level 422."""
     res = client.post(
@@ -153,7 +207,7 @@ def test_predict_endpoint(client: TestClient) -> None:
 
 
 def test_compare_endpoint_ranks_models(client: TestClient) -> None:
-    """On exponential data, the exponential model must win the comparison."""
+    """On exponential data, an exponential-family model wins the comparison."""
     res = client.post(
         "/api/v1/fit/compare",
         json={
@@ -163,22 +217,28 @@ def test_compare_endpoint_ranks_models(client: TestClient) -> None:
     )
     assert res.status_code == 200
     body = res.json()
-    assert body["best_model"] == "exponential"
-    assert len(body["results"]) == 3
-    assert body["results"][0]["model"] == "exponential"
+    # ae^bx and ab^x are the same curve family, so either may rank first.
+    assert body["best_model"] in ("exponential", "exponential_abx")
+    assert len(body["results"]) == 5
+    assert body["results"][0]["model"] in ("exponential", "exponential_abx")
+    # x = 0 makes ln x undefined: the power model reports unavailable.
+    power_entry = next(r for r in body["results"] if r["model"] == "power")
+    assert power_entry["available"] is False
+    assert power_entry["reason"]
 
 
 def test_compare_marks_exponential_unavailable(client: TestClient) -> None:
-    """With y <= 0, exponential is reported unavailable, not an error."""
+    """With y <= 0, the exponential family is reported unavailable, not an error."""
     res = client.post(
         "/api/v1/fit/compare",
         json={"x": [0, 1, 2, 3, 4], "y": [1, 0.5, 0, -0.5, -1]},
     )
     assert res.status_code == 200
     body = res.json()
-    exp_entry = next(r for r in body["results"] if r["model"] == "exponential")
-    assert exp_entry["available"] is False
-    assert exp_entry["reason"]
+    for name in ("exponential", "exponential_abx", "power"):
+        entry = next(r for r in body["results"] if r["model"] == name)
+        assert entry["available"] is False
+        assert entry["reason"]
 
 
 def test_parse_text(client: TestClient) -> None:

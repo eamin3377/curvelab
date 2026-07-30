@@ -10,11 +10,18 @@ from app.schemas.dataset import CleaningReport
 
 
 class ModelName(str, Enum):
-    """Supported curve fitting models."""
+    """Supported curve fitting models.
+
+    The three exponential-family variants all linearize via logarithms:
+    exponential (ae^bx) on (x, ln y), exponential_abx (ab^x) on (x, ln y),
+    and power (ax^b) on (ln x, ln y).
+    """
 
     linear = "linear"
     polynomial = "polynomial"
     exponential = "exponential"
+    exponential_abx = "exponential_abx"
+    power = "power"
 
 
 class FitOptions(BaseModel):

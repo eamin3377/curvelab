@@ -9,6 +9,8 @@ const TONES: Record<ModelId, { icon: string; ring: string }> = {
   linear: { icon: 'bg-indigo-50 text-indigo-600', ring: 'ring-indigo-500/70' },
   polynomial: { icon: 'bg-violet-50 text-violet-600', ring: 'ring-violet-500/70' },
   exponential: { icon: 'bg-cyan-50 text-cyan-600', ring: 'ring-cyan-500/70' },
+  exponential_abx: { icon: 'bg-teal-50 text-teal-600', ring: 'ring-teal-500/70' },
+  power: { icon: 'bg-amber-50 text-amber-600', ring: 'ring-amber-500/70' },
 }
 
 export function SamplesPanel({

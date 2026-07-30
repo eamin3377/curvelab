@@ -2,7 +2,7 @@
 // The frontend renders exactly what the API returns; nothing is recomputed
 // client-side except live prediction evaluation from server coefficients.
 
-export type ModelId = 'linear' | 'polynomial' | 'exponential'
+export type ModelId = 'linear' | 'polynomial' | 'exponential' | 'exponential_abx' | 'power'
 
 export interface Point {
   x: number
@@ -13,6 +13,16 @@ export const MODEL_META: Record<ModelId, { label: string; formula: string }> = {
   linear: { label: 'Linear', formula: 'y = a + bx' },
   polynomial: { label: 'Polynomial', formula: 'y = a_0 + a_1x + a_2x^2' },
   exponential: { label: 'Exponential', formula: 'y = ae^{bx}' },
+  exponential_abx: { label: 'Exponential', formula: 'y = ab^{x}' },
+  power: { label: 'Power', formula: 'y = ax^{b}' },
+}
+
+// The exponential family: three log-linearizable forms offered together
+// in the model picker. All require y > 0; power additionally needs x > 0.
+export const EXPONENTIAL_FAMILY: ModelId[] = ['exponential', 'exponential_abx', 'power']
+
+export function isExponentialFamily(model: ModelId): boolean {
+  return EXPONENTIAL_FAMILY.includes(model)
 }
 
 export interface FitRequestPayload {
@@ -155,6 +165,14 @@ export function evaluateModel(
   if (model === 'exponential') {
     const [a, b] = coefficients.map((c) => c.value)
     return a * Math.exp(b * x)
+  }
+  if (model === 'exponential_abx') {
+    const [a, b] = coefficients.map((c) => c.value)
+    return a * Math.pow(b, x)
+  }
+  if (model === 'power') {
+    const [a, b] = coefficients.map((c) => c.value)
+    return a * Math.pow(x, b)
   }
   return coefficients.reduce((acc, c, k) => acc + c.value * Math.pow(x, k), 0)
 }

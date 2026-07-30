@@ -22,7 +22,7 @@ import { CountUp } from '../components/ui/CountUp'
 import { Equation } from '../components/ui/Equation'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { HeroChart } from '../features/landing/HeroChart'
-import { MODEL_META, type ModelId } from '../lib/types'
+import { isExponentialFamily, MODEL_META, type ModelId } from '../lib/types'
 
 const rise = {
   hidden: { opacity: 0, y: 22 },
@@ -93,6 +93,20 @@ const algoDetail: Record<
     normal:
       '\\begin{aligned} n\\ln a + b\\sum x_i &= \\sum \\ln y_i \\\\ \\ln a \\sum x_i + b\\sum x_i^2 &= \\sum x_i \\ln y_i \\end{aligned}',
     use: 'Best for growth and decay processes — bacterial growth, radioactive decay, compound interest.',
+  },
+  exponential_abx: {
+    blurb:
+      'Fits y = abˣ by taking logarithms: ln y = ln a + x·ln b is linear in (x, ln y). The 2×2 system solves for ln a and ln b, then a = e^(ln a) and b = e^(ln b).',
+    normal:
+      '\\begin{aligned} n\\ln a + \\ln b\\sum x_i &= \\sum \\ln y_i \\\\ \\ln a \\sum x_i + \\ln b \\sum x_i^2 &= \\sum x_i \\ln y_i \\end{aligned}',
+    use: 'Best when data grows by a constant factor per step — population doubling, depreciation, interest per period.',
+  },
+  power: {
+    blurb:
+      'Fits y = axᵇ with a log-log transform: ln y = ln a + b·ln x is linear in (ln x, ln y). Requires both x > 0 and y > 0.',
+    normal:
+      '\\begin{aligned} n\\ln a + b\\sum \\ln x_i &= \\sum \\ln y_i \\\\ \\ln a \\sum \\ln x_i + b\\sum (\\ln x_i)^2 &= \\sum \\ln x_i \\ln y_i \\end{aligned}',
+    use: 'Best for scaling laws — area vs length, power dissipation vs voltage, allometric growth.',
   },
 }
 
@@ -263,11 +277,11 @@ export function Landing() {
               Three models, one principle
             </h2>
             <p className="mt-4 text-lg text-slate-500">
-              All three fits minimize the sum of squared residuals — only the normal equations change.
+              Every fit minimizes the sum of squared residuals — only the normal equations change.
             </p>
           </div>
 
-          <div className="mx-auto mt-10 max-w-md">
+          <div className="mx-auto mt-10 max-w-md space-y-3">
             <SegmentedControl
               id="algo"
               options={[
@@ -275,9 +289,27 @@ export function Landing() {
                 { value: 'polynomial', label: 'Polynomial' },
                 { value: 'exponential', label: 'Exponential' },
               ]}
-              value={algo}
-              onChange={setAlgo}
+              value={(isExponentialFamily(algo) ? 'exponential' : algo) as 'linear' | 'polynomial' | 'exponential'}
+              onChange={(v) => setAlgo(v as ModelId)}
             />
+            {isExponentialFamily(algo) && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SegmentedControl
+                  id="algo-exp"
+                  options={[
+                    { value: 'exponential', label: 'y = aeᵇˣ' },
+                    { value: 'exponential_abx', label: 'y = abˣ' },
+                    { value: 'power', label: 'y = axᵇ' },
+                  ]}
+                  value={algo}
+                  onChange={(v) => setAlgo(v as ModelId)}
+                />
+              </motion.div>
+            )}
           </div>
 
           <motion.div

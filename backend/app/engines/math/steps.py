@@ -31,12 +31,17 @@ _SUMMATION_LATEX = {
     "sum_x2y": "\\sum x_i^2 y_i",
     "sum_ln_y": "\\sum \\ln y_i",
     "sum_x_ln_y": "\\sum x_i \\ln y_i",
+    "sum_ln_x": "\\sum \\ln x_i",
+    "sum_ln_x2": "\\sum (\\ln x_i)^2",
+    "sum_ln_x_ln_y": "\\sum \\ln x_i \\ln y_i",
 }
 
 _MODEL_FORMULA = {
     "linear": "y = a + bx",
     "polynomial": "y = a_0 + a_1 x + a_2 x^2 + \\cdots + a_m x^m",
     "exponential": "y = a\\,e^{bx}",
+    "exponential_abx": "y = a\\,b^{x}",
+    "power": "y = a\\,x^{b}",
 }
 
 

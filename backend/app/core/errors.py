@@ -64,6 +64,12 @@ class NonPositiveYValuesError(DomainError):
     error_type = "validation_error"
 
 
+class NonPositiveXValuesError(DomainError):
+    """Power-law fitting received x <= 0."""
+
+    error_type = "validation_error"
+
+
 class FileParseError(DomainError):
     """An uploaded/pasted payload could not be parsed into a dataset."""
 

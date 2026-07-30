@@ -47,13 +47,13 @@ const sections = [
     id: 'exponential',
     icon: FunctionSquare,
     badge: 'Model 3' as const,
-    title: 'Exponential Fitting — y = aeᵇˣ',
+    title: 'Exponential Fitting — y = aeᵇˣ, y = abˣ, y = axᵇ',
     body: [
-      'Exponential models are nonlinear, but a logarithmic transformation linearizes them: taking ln of both sides turns y = aeᵇˣ into ln y = ln a + bx — a straight line in (x, ln y).',
-      'We fit the transformed data with the linear normal equations, then recover a = e^(ln a). One requirement: every y must be positive, since ln y is undefined otherwise. CurveLab validates this automatically.',
+      'Exponential-family models are nonlinear, but logarithms linearize all three: y = aeᵇˣ becomes ln y = ln a + bx, and y = abˣ becomes ln y = ln a + x·ln b — both straight lines in (x, ln y), with a = e^(ln a) and, for the second form, b = e^(ln b).',
+      'The power law y = axᵇ needs logs on both axes: ln y = ln a + b·ln x is a straight line in (ln x, ln y). Requirements: y > 0 for all three forms (ln y), and x > 0 as well for the power law (ln x). CurveLab validates both automatically and flags the exact offending rows.',
     ],
     latex:
-      'y = ae^{bx} \\;\\;\\xrightarrow{\\;\\ln\\;}\\;\\; \\ln y = \\ln a + bx \\;\\;\\Longrightarrow\\;\\; a = e^{\\,\\frac{\\sum \\ln y_i - b\\sum x_i}{n}}',
+      'y = ae^{bx} \\xrightarrow{\\ln} \\ln y = \\ln a + bx, \\quad y = ab^{x} \\xrightarrow{\\ln} \\ln y = \\ln a + x\\ln b, \\quad y = ax^{b} \\xrightarrow{\\ln} \\ln y = \\ln a + b\\ln x',
   },
 ]
 

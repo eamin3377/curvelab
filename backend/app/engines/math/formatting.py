@@ -69,3 +69,21 @@ def build_exponential_equation(
     plain = f"y = {fmt(a, precision)}·e^({fmt(b, precision)}x)"
     latex = f"y = {latex_number(a, precision)}\\,e^{{{latex_number(b, precision)}x}}"
     return plain, latex
+
+
+def build_abx_equation(
+    a: float, b: float, precision: int = 4
+) -> tuple[str, str]:
+    """Build plain and LaTeX equations for y = a·b^x."""
+    plain = f"y = {fmt(a, precision)}·{fmt(b, precision)}^x"
+    latex = f"y = {latex_number(a, precision)} \\cdot {latex_number(b, precision)}^{{x}}"
+    return plain, latex
+
+
+def build_power_equation(
+    a: float, b: float, precision: int = 4
+) -> tuple[str, str]:
+    """Build plain and LaTeX equations for y = a·x^b."""
+    plain = f"y = {fmt(a, precision)}·x^{fmt(b, precision)}"
+    latex = f"y = {latex_number(a, precision)}\\,x^{{{latex_number(b, precision)}}}"
+    return plain, latex
