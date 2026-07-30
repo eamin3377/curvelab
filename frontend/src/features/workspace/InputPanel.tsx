@@ -46,7 +46,7 @@ export function InputPanel({
   const [tab, setTab] = useState<InputTab>('manual')
 
   return (
-    <Card className="flex max-h-[calc(100vh-15rem)] flex-col overflow-hidden">
+    <Card className="flex h-full max-h-full flex-col overflow-hidden lg:h-full">
       <CardHeader
         title="Dataset"
         subtitle={`${points.length} points loaded`}

@@ -41,7 +41,7 @@ export function Workspace() {
           </div>
 
           <div className="grid min-w-0 gap-6 lg:grid-cols-[380px_1fr] lg:items-start 2xl:grid-cols-[440px_1fr] 2xl:gap-8">
-            <div className="min-w-0 lg:sticky lg:top-24">
+            <div className="min-w-0 lg:sticky lg:top-20 lg:flex lg:h-[calc(100vh-6rem)] lg:max-h-[calc(100vh-6rem)] lg:flex-col">
               <InputPanel
                 points={ws.points}
                 onPointsChange={(pts) => {
