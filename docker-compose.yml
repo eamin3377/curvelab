@@ -1,0 +1,39 @@
+# CurveLab all-in-one VPS deployment.
+#
+#   docker compose up -d --build
+#
+# Caddy terminates HTTPS (automatic Let's Encrypt) and proxies to the app.
+# Set DOMAIN in a .env file next to this file (e.g. DOMAIN=curvelab.example.com).
+# Without it, the site is served over plain HTTP on localhost/port 80.
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "8000" # internal only; Caddy is the public entrypoint
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # TLS certificates persist here
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:
