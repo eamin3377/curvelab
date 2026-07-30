@@ -6,6 +6,7 @@ venv/
 # Build output
 dist/
 dist-ssr/
+backend/static/
 
 # Python caches
 __pycache__/
