@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FlaskConical, Loader2 } from 'lucide-react'
+import { FlaskConical } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { ApiError, fetchSample, fetchSamples } from '../../lib/api'
-import type { ModelId, Point, SampleSummary } from '../../lib/types'
+import { SAMPLE_DATASETS } from '../../lib/samples'
+import type { ModelId, Point } from '../../lib/types'
 
 const TONES: Record<ModelId, { icon: string; ring: string }> = {
   linear: { icon: 'bg-indigo-50 text-indigo-600', ring: 'ring-indigo-500/70' },
@@ -18,55 +17,19 @@ export function SamplesPanel({
 }: {
   onLoad: (pts: Point[], model: ModelId) => void
 }) {
-  const [samples, setSamples] = useState<SampleSummary[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [busyId, setBusyId] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    fetchSamples()
-      .then((list) => {
-        if (!cancelled) setSamples(list)
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setError(err instanceof ApiError ? err.problem.detail : 'Samples unavailable.')
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const pick = async (id: string) => {
-    setBusyId(id)
-    setError(null)
-    try {
-      const sample = await fetchSample(id)
-      onLoad(
-        sample.x.map((x, i) => ({ x, y: sample.y[i] })),
-        sample.model,
-      )
-    } catch (err) {
-      setError(err instanceof ApiError ? err.problem.detail : 'Could not load sample.')
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  if (samples === null && !error) {
-    return (
-      <div className="flex items-center justify-center gap-2 py-10 text-sm text-slate-400">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading sample datasets…
-      </div>
+  const pick = (id: string) => {
+    const sample = SAMPLE_DATASETS.find((s) => s.id === id)
+    if (!sample) return
+    onLoad(
+      sample.x.map((x, i) => ({ x, y: sample.y[i] })),
+      sample.model,
     )
   }
 
   return (
     <div>
-      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
       <div className="grid grid-cols-1 gap-3">
-        {samples?.map((s) => {
+        {SAMPLE_DATASETS.map((s) => {
           const tone = TONES[s.model]
           return (
             <motion.button
@@ -74,12 +37,11 @@ export function SamplesPanel({
               type="button"
               whileHover={{ y: -3 }}
               whileTap={{ scale: 0.98 }}
-              disabled={busyId !== null}
-              onClick={() => void pick(s.id)}
-              className="group flex w-full items-start gap-3 rounded-xl border border-slate-200/70 bg-white p-4 text-left transition-shadow hover:shadow-lg hover:shadow-slate-200/60 disabled:opacity-60"
+              onClick={() => pick(s.id)}
+              className="group flex w-full items-start gap-3 rounded-xl border border-slate-200/70 bg-white p-4 text-left transition-shadow hover:shadow-lg hover:shadow-slate-200/60"
             >
               <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-110', tone.icon)}>
-                {busyId === s.id ? <Loader2 className="h-5 w-5 animate-spin" /> : <FlaskConical className="h-5 w-5" />}
+                <FlaskConical className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-slate-900">{s.name}</span>
