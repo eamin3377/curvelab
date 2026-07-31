@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
 import { GraduationCap, Mail } from 'lucide-react'
 import { Logo } from './Logo'
 import { GithubIcon } from '../ui/GithubIcon'
+import { hardHref } from '../../lib/hardNav'
 
 const columns = [
   {
@@ -67,12 +67,13 @@ export function Footer() {
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link
-                      to={l.to}
+                    <a
+                      href={hardHref(l.to)}
+                      data-hardnav
                       className="text-sm text-slate-500 transition-colors hover:text-indigo-600"
                     >
                       {l.label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, Menu, X } from 'lucide-react'
 import { Logo } from './Logo'
 import { LinkButton } from '../ui/LinkButton'
 import { GithubIcon } from '../ui/GithubIcon'
+import { hardHref } from '../../lib/hardNav'
 import { cn } from '../../lib/utils'
 
 const links = [
@@ -45,23 +46,25 @@ export function Navbar() {
         <Logo />
 
         <div className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              className={({ isActive }) =>
-                cn(
+          {links.map((l) => {
+            const active =
+              l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to)
+            return (
+              <a
+                key={l.to}
+                href={hardHref(l.to)}
+                data-hardnav
+                className={cn(
                   'rounded-lg px-3.5 py-2 text-sm font-medium transition-colors',
-                  isActive
+                  active
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-                )
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
+                )}
+              >
+                {l.label}
+              </a>
+            )
+          })}
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -100,21 +103,23 @@ export function Navbar() {
             className="overflow-hidden border-t border-slate-200/60 md:hidden"
           >
             <div className="space-y-1 px-4 pb-4 pt-2">
-              {links.map((l) => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  end={l.to === '/'}
-                  className={({ isActive }) =>
-                    cn(
+              {links.map((l) => {
+                const active =
+                  l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to)
+                return (
+                  <a
+                    key={l.to}
+                    href={hardHref(l.to)}
+                    data-hardnav
+                    className={cn(
                       'block rounded-lg px-3 py-2.5 text-[15px] font-medium',
-                      isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-100',
-                    )
-                  }
-                >
-                  {l.label}
-                </NavLink>
-              ))}
+                      active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-100',
+                    )}
+                  >
+                    {l.label}
+                  </a>
+                )
+              })}
               <LinkButton to="/app" className="w-full">
                   Open Workspace
                   <ArrowRight className="h-4 w-4" />

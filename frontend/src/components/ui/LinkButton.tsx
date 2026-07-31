@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { hardHref } from '../../lib/hardNav'
 import { cn } from '../../lib/utils'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -36,8 +36,9 @@ export function LinkButton({
   children: ReactNode
 }) {
   return (
-    <Link
-      to={to}
+    <a
+      href={hardHref(to)}
+      data-hardnav
       className={cn(
         'inline-flex select-none items-center justify-center font-semibold transition-all duration-150',
         variants[variant],
@@ -46,6 +47,6 @@ export function LinkButton({
       )}
     >
       {children}
-    </Link>
+    </a>
   )
 }
