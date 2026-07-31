@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { LinkButton } from '../components/ui/LinkButton'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { PageTransition } from '../components/layout/PageTransition'
-import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { CountUp } from '../components/ui/CountUp'
@@ -144,18 +143,14 @@ export function Landing() {
               equations, and draw a publication-quality regression graph — instantly.
             </motion.p>
             <motion.div variants={rise} className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/app">
-                <Button size="lg">
+              <LinkButton to="/app" size="lg">
                   Start Fitting
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/methods">
-                <Button variant="secondary" size="lg">
+              </LinkButton>
+              <LinkButton to="/methods" variant="secondary" size="lg">
                   <Play className="h-4 w-4" />
                   See how it works
-                </Button>
-              </Link>
+              </LinkButton>
             </motion.div>
             <motion.div variants={rise} className="mt-10 flex items-center gap-6">
               {[
@@ -347,12 +342,10 @@ export function Landing() {
                   <div className="mt-4 overflow-x-auto scrollbar-thin">
                     <Equation latex={algoDetail[algo].normal} block className="text-[15px] text-slate-700" />
                   </div>
-                  <Link to="/app" className="mt-8 inline-block">
-                    <Button variant="secondary" size="sm">
+                  <LinkButton to="/app" variant="secondary" size="sm" className="mt-8 inline-block">
                       Try it in the workspace
                       <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </Link>
+                  </LinkButton>
                 </div>
               </div>
             </Card>
@@ -374,15 +367,10 @@ export function Landing() {
             Open the workspace, load a sample dataset, and get a complete least squares analysis in
             under a second.
           </p>
-          <Link to="/app" className="mt-8 inline-block">
-            <Button
-              size="lg"
-              className="bg-white from-white to-white !text-indigo-700 shadow-[0_8px_28px_rgb(0_0_0/0.2)] hover:bg-indigo-50"
-            >
+          <LinkButton to="/app" size="lg" className="mt-8 bg-white from-white to-white !text-indigo-700 shadow-[0_8px_28px_rgb(0_0_0/0.2)] hover:bg-indigo-50">
               Open Workspace
               <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          </LinkButton>
           <p className="mt-6 flex items-center justify-center gap-2 text-sm text-indigo-200">
             <Download className="h-4 w-4" />
             Free · No sign-up · Exports included

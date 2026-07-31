@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { LinkButton } from '../components/ui/LinkButton'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -11,7 +11,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { PageTransition } from '../components/layout/PageTransition'
-import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 
@@ -173,12 +172,10 @@ export function About() {
           </motion.div>
 
           <div className="mt-12 text-center">
-            <Link to="/app">
-              <Button size="lg">
+            <LinkButton to="/app" size="lg">
                 Try CurveLab
                 <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            </LinkButton>
           </div>
         </div>
       </div>

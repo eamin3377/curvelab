@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom'
+import { LinkButton } from '../components/ui/LinkButton'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { PageTransition } from '../components/layout/PageTransition'
-import { Button } from '../components/ui/Button'
 
 const dots: Array<[number, number, number]> = [
   // 4
@@ -51,12 +50,10 @@ export function NotFound() {
         <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-slate-500">
           The page you're looking for is an outlier — it was moved, renamed, or never existed.
         </p>
-        <Link to="/" className="mt-8">
-          <Button size="lg">
+        <LinkButton to="/" size="lg" className="mt-8">
             <ArrowLeft className="h-4 w-4" />
             Back to home
-          </Button>
-        </Link>
+        </LinkButton>
       </div>
     </PageTransition>
   )

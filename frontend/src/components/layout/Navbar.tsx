@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, Menu, X } from 'lucide-react'
 import { Logo } from './Logo'
+import { LinkButton } from '../ui/LinkButton'
 import { GithubIcon } from '../ui/GithubIcon'
-import { Button } from '../ui/Button'
 import { cn } from '../../lib/utils'
 
 const links = [
@@ -74,12 +74,10 @@ export function Navbar() {
           >
             <GithubIcon className="h-[18px] w-[18px]" />
           </a>
-          <Link to="/app">
-            <Button size="sm" className="h-9 px-4">
+          <LinkButton to="/app" size="sm" className="h-9 px-4">
               Open Workspace
               <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+          </LinkButton>
         </div>
 
         <button
@@ -117,12 +115,10 @@ export function Navbar() {
                   {l.label}
                 </NavLink>
               ))}
-              <Link to="/app" className="block pt-2">
-                <Button className="w-full">
+              <LinkButton to="/app" className="w-full">
                   Open Workspace
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              </LinkButton>
             </div>
           </motion.div>
         )}
