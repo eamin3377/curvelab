@@ -45,8 +45,46 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
-export function fitCurve(payload: FitRequestPayload): Promise<ApiFitResult> {
-  return request<ApiFitResult>('/fit', { method: 'POST', body: JSON.stringify(payload) })
+export type RetryNotifier = (attempt: number) => void
+
+// The free Replit backend sleeps when idle; while asleep it returns an HTML
+// placeholder page (or the browser blocks it via CORS), surfacing as a
+// network_error. Retry for up to 90s so a sleeping backend gets time to wake.
+function isRetryable(err: unknown): boolean {
+  return (
+    err instanceof TypeError ||
+    (err instanceof ApiError && err.problem.type === 'network_error')
+  )
+}
+
+async function requestWithRetry<T>(
+  path: string,
+  init: RequestInit | undefined,
+  onRetrying?: RetryNotifier,
+): Promise<T> {
+  const deadline = Date.now() + 90_000
+  let attempt = 0
+  for (;;) {
+    try {
+      return await request<T>(path, init)
+    } catch (err) {
+      if (!isRetryable(err) || Date.now() >= deadline) throw err
+      attempt += 1
+      onRetrying?.(attempt)
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+    }
+  }
+}
+
+export function fitCurve(
+  payload: FitRequestPayload,
+  onRetrying?: RetryNotifier,
+): Promise<ApiFitResult> {
+  return requestWithRetry<ApiFitResult>(
+    '/fit',
+    { method: 'POST', body: JSON.stringify(payload) },
+    onRetrying,
+  )
 }
 
 export function parseText(text: string): Promise<ParsedDatasetResponse> {

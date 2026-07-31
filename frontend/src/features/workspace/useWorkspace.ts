@@ -47,6 +47,7 @@ export function useWorkspace() {
   const [model, setModel] = useState<ModelId>('linear')
   const [degree, setDegree] = useState(2)
   const [status, setStatus] = useState<FitStatus>('idle')
+  const [waking, setWaking] = useState(false)
   const [result, setResult] = useState<ApiFitResult | null>(null)
   const [cleaning, setCleaning] = useState<CleaningNote | null>(null)
   const [problem, setProblem] = useState<ApiProblem | null>(null)
@@ -62,7 +63,8 @@ export function useWorkspace() {
       setProblem(null)
       const payload = buildFitRequest(valid, m, deg)
       try {
-        const res = await fitCurve(payload)
+        const res = await fitCurve(payload, () => setWaking(true))
+        setWaking(false)
         if (id !== runId.current) return // a newer fit superseded this one
         requestRef.current = payload
         setResult(res)
@@ -74,13 +76,19 @@ export function useWorkspace() {
         )
         setStatus('ready')
       } catch (err) {
+        setWaking(false)
         if (id !== runId.current) return
         setProblem(
           err instanceof ApiError
             ? err.problem
-            : { type: 'network_error', title: 'Backend unreachable', detail: 'Could not reach the API. Is the server running on port 8000?' },
+            : {
+                type: 'network_error',
+                title: 'Compute server unreachable',
+                detail:
+                  'The backend is asleep or offline. Open the project in Replit, press Run, wait about 30 seconds, then press Fit Curve again.',
+              },
         )
-        setStatus(points.length >= 2 ? 'idle' : 'idle')
+        setStatus('idle')
       }
     },
     [points, model, degree],
@@ -109,6 +117,7 @@ export function useWorkspace() {
     degree,
     setDegree,
     status,
+    waking,
     result,
     cleaning,
     setCleaning,

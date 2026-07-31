@@ -29,6 +29,7 @@ export function InputPanel({
   model,
   onModelChange,
   status,
+  waking,
   cleaning,
   onDismissCleaning,
   onFit,
@@ -39,6 +40,7 @@ export function InputPanel({
   model: ModelId
   onModelChange: (m: ModelId) => void
   status: FitStatus
+  waking: boolean
   cleaning: CleaningNote | null
   onDismissCleaning: () => void
   onFit: () => void
@@ -193,6 +195,11 @@ export function InputPanel({
             </>
           )}
         </Button>
+        {status === 'fitting' && waking && (
+          <p className="mt-2 text-center text-[12px] leading-snug text-slate-400">
+            Waking up the compute server — the first fit after idle can take up to a minute.
+          </p>
+        )}
       </div>
     </Card>
   )

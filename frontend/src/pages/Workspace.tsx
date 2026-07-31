@@ -57,6 +57,7 @@ export function Workspace() {
                   setPrediction(null)
                 }}
                 status={ws.status}
+                waking={ws.waking}
                 cleaning={ws.cleaning}
                 onDismissCleaning={() => ws.setCleaning(null)}
                 onFit={() => void ws.fit()}
