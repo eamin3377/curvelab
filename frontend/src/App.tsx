@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useEffect } from 'react'
 import { Navbar } from './components/layout/Navbar'
@@ -30,13 +30,12 @@ function AnimatedRoutes() {
   )
 }
 
-// GitHub Pages serves under /curvelab/, so BrowserRouter needs the
-// basename to match. Falls back to "/" for root-domain hosting.
-const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '')
-
+// HashRouter works on GitHub Pages without server config — everything
+// after # is handled client-side, so /app, /methods, /about all work
+// on refresh and on direct links.
 export default function App() {
   return (
-    <BrowserRouter basename={BASENAME}>
+    <HashRouter>
       <ScrollToTop />
       <div className="flex min-h-screen flex-col">
         <Navbar />
@@ -45,6 +44,6 @@ export default function App() {
         </div>
         <Footer />
       </div>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
