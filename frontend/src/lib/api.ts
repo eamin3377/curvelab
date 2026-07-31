@@ -11,6 +11,9 @@ import type {
   SampleSummary,
 } from './types'
 
+// GitHub Pages is static-only, so the backend must be hosted elsewhere.
+// Set VITE_API_URL to the backend URL (e.g. your Replit/Railway URL).
+// Falls back to localhost for dev, and same-origin /api/v1 for single-host.
 const BASE_URL =
   import.meta.env.VITE_API_URL ??
   (import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1')

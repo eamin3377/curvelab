@@ -30,9 +30,13 @@ function AnimatedRoutes() {
   )
 }
 
+// GitHub Pages serves under /curvelab/, so BrowserRouter needs the
+// basename to match. Falls back to "/" for root-domain hosting.
+const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASENAME}>
       <ScrollToTop />
       <div className="flex min-h-screen flex-col">
         <Navbar />
