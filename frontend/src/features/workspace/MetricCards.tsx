@@ -18,7 +18,8 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
   const metrics = [
     {
       label: 'R² Score',
-      hint: 'Coefficient of determination — proportion of variance explained by the fit. Closer to 1 is better.',
+      name: 'Coefficient of determination',
+      hint: 'Proportion of variance explained by the fit. Closer to 1 is better.',
       value: result.metrics.r2,
       digits: 4,
       icon: Gauge,
@@ -27,7 +28,8 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
     },
     {
       label: 'RMSE',
-      hint: 'Root Mean Square Error — typical size of the residuals, in y units.',
+      name: 'Root Mean Square Error',
+      hint: 'Typical size of the residuals, in y units.',
       value: result.metrics.rmse,
       digits: 4,
       icon: Target,
@@ -35,7 +37,8 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
     },
     {
       label: 'MAE',
-      hint: 'Mean Absolute Error — average absolute deviation of predictions.',
+      name: 'Mean Absolute Error',
+      hint: 'Average absolute deviation of predictions.',
       value: result.metrics.mae,
       digits: 4,
       icon: Crosshair,
@@ -43,7 +46,8 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
     },
     {
       label: 'MSE',
-      hint: 'Mean Squared Error — average of squared residuals.',
+      name: 'Mean Squared Error',
+      hint: 'Average of squared residuals. Penalizes large errors.',
       value: result.metrics.mse,
       digits: 4,
       icon: Activity,
@@ -60,10 +64,12 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
     >
       {metrics.map((m) => (
         <motion.div key={m.label} variants={item} className="h-full">
-          <Card hover className="relative flex h-full flex-col overflow-hidden p-5">
-            <div
-              className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${m.accent} opacity-[0.07]`}
-            />
+          <Card hover className="relative flex h-full flex-col p-5">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+              <div
+                className={`absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${m.accent} opacity-[0.07]`}
+              />
+            </div>
             <div className="flex items-center justify-between">
               <Tooltip label={m.hint}>
                 <span className="cursor-help text-xs font-semibold uppercase tracking-wider text-slate-400 underline decoration-dotted decoration-slate-300 underline-offset-4">
@@ -79,6 +85,7 @@ export function MetricCards({ result }: { result: ApiFitResult }) {
             <p className="mt-3 font-mono text-2xl font-semibold tracking-tight text-slate-900">
               <CountUp value={m.value} digits={m.digits} />
             </p>
+            <p className="mt-1 text-xs font-medium text-slate-400">{m.name}</p>
             <p
               className={`mt-1 min-h-4 text-xs font-medium ${
                 m.good === undefined ? 'invisible' : 'text-emerald-600'
