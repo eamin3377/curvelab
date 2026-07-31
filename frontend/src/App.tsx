@@ -1,5 +1,4 @@
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
 import { useEffect } from 'react'
 import { Navbar } from './components/layout/Navbar'
 import { Footer } from './components/layout/Footer'
@@ -18,15 +17,13 @@ function ScrollToTop() {
 function AnimatedRoutes() {
   const location = useLocation()
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Landing />} />
-        <Route path="/app" element={<Workspace />} />
-        <Route path="/methods" element={<Methods />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
+    <Routes location={location} key={location.pathname}>
+      <Route path="/" element={<Landing />} />
+      <Route path="/app" element={<Workspace />} />
+      <Route path="/methods" element={<Methods />} />
+      <Route path="/about" element={<About />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   )
 }
 
