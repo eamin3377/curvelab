@@ -52,7 +52,7 @@ export function ManualGrid({
         variant="secondary"
         size="sm"
         className="mt-3 w-full"
-        onClick={() => onChange([...points, { x: 0, y: 0 }])}
+        onClick={() => onChange([...points, { x: NaN, y: NaN }])}
       >
         <Plus className="h-3.5 w-3.5" />
         Add row

@@ -15,11 +15,17 @@ export interface CleaningNote {
   droppedEmpty: number
 }
 
-export const DEFAULT_DATA: Point[] = [
-  { x: 1, y: 2.9 }, { x: 2, y: 5.1 }, { x: 3, y: 6.8 }, { x: 4, y: 9.2 },
-  { x: 5, y: 10.9 }, { x: 6, y: 13.1 }, { x: 7, y: 14.8 }, { x: 8, y: 17.2 },
-  { x: 9, y: 18.9 }, { x: 10, y: 21.1 }, { x: 11, y: 22.8 }, { x: 12, y: 25.2 },
+// Manual entry starts with blank rows (NaN renders as an empty input);
+// sample datasets are loaded explicitly via the Samples tab.
+const BLANK_ROWS: Point[] = [
+  { x: NaN, y: NaN },
+  { x: NaN, y: NaN },
+  { x: NaN, y: NaN },
 ]
+
+export function validPoints(pts: Point[]): Point[] {
+  return pts.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+}
 
 export function buildFitRequest(
   points: Point[],
@@ -37,7 +43,7 @@ export function buildFitRequest(
 }
 
 export function useWorkspace() {
-  const [points, setPoints] = useState<Point[]>(DEFAULT_DATA)
+  const [points, setPoints] = useState<Point[]>(BLANK_ROWS)
   const [model, setModel] = useState<ModelId>('linear')
   const [degree, setDegree] = useState(2)
   const [status, setStatus] = useState<FitStatus>('idle')
@@ -49,11 +55,12 @@ export function useWorkspace() {
 
   const fit = useCallback(
     async (pts: Point[] = points, m: ModelId = model, deg: number = degree) => {
-      if (pts.length < 2) return
+      const valid = validPoints(pts)
+      if (valid.length < 2) return
       const id = ++runId.current
       setStatus('fitting')
       setProblem(null)
-      const payload = buildFitRequest(pts, m, deg)
+      const payload = buildFitRequest(valid, m, deg)
       try {
         const res = await fitCurve(payload)
         if (id !== runId.current) return // a newer fit superseded this one

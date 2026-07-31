@@ -10,7 +10,7 @@ import { PastePanel } from './PastePanel'
 import { UploadZone } from './UploadZone'
 import { SamplesPanel } from './SamplesPanel'
 import { isExponentialFamily, MODEL_META, type ModelId, type Point } from '../../lib/types'
-import type { CleaningNote, FitStatus } from './useWorkspace'
+import { validPoints, type CleaningNote, type FitStatus } from './useWorkspace'
 import { cn } from '../../lib/utils'
 
 type InputTab = 'manual' | 'paste' | 'upload' | 'samples'
@@ -44,12 +44,13 @@ export function InputPanel({
   onFit: () => void
 }) {
   const [tab, setTab] = useState<InputTab>('manual')
+  const validCount = validPoints(points).length
 
   return (
     <Card className="flex h-full max-h-full flex-col overflow-hidden lg:h-full">
       <CardHeader
         title="Dataset"
-        subtitle={`${points.length} points loaded`}
+        subtitle={`${validCount} point${validCount === 1 ? '' : 's'} loaded`}
         icon={<Sparkles className="h-4 w-4" />}
       />
 
@@ -178,7 +179,7 @@ export function InputPanel({
           size="lg"
           className="mt-3 w-full"
           onClick={onFit}
-          disabled={status === 'fitting' || points.length < 2}
+          disabled={status === 'fitting' || validCount < 2}
         >
           {status === 'fitting' ? (
             <>

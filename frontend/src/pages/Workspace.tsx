@@ -144,7 +144,7 @@ export function Workspace() {
                     </div>
                     <h2 className="mt-6 text-xl font-bold text-slate-900">Ready when you are</h2>
                     <p className="mt-2 max-w-sm text-[14.5px] leading-relaxed text-slate-500">
-                      Your dataset is loaded. Press{' '}
+                      Enter your X and Y values (or load a sample), then press{' '}
                       <span className="font-semibold text-indigo-600">Fit Curve</span> to solve the
                       normal equations and reveal the full analysis.
                     </p>
